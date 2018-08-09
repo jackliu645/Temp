@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<property name="logback.logdir" value="logDev"/>
+	<property name="logback.appname" value="app"/>
+
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">      
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] %c{1} - %msg%n</pattern>
+        </layout>
+    </appender>
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">    
+	    <File>${logback.logdir}/${logback.appname}.log</File>
+	    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+	        <FileNamePattern>${logback.logdir}/${logback.appname}.%d{yyyy-MM-dd}.log</FileNamePattern>       
+	    </rollingPolicy>
+	    <encoder>
+	        <charset>UTF-8</charset>
+	        <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] %c{1} - %msg%n</pattern>
+	    </encoder>
+	</appender>
+    <root level="INFO">
+        <appender-ref ref="console"/>
+        <appender-ref ref="file"/>
+    </root>
+</configuration>
