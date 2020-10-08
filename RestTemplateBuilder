@@ -1,0 +1,64 @@
+
+
+@Configuration
+public class OrderConfig {
+
+    @Bean
+    RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder
+//.requestFactory(() -> validateSSL())
+                .build();
+    }
+    private HttpComponentsClientHttpRequestFactory disableSSl(){
+        TrustStrategy acceptingTrustStrategy = new TrustStrategy() {
+            @Override
+            public boolean isTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+                return true;
+            }
+        };
+        SSLContext sslContext = null;
+        try {
+            sslContext = org.apache.http.ssl.SSLContexts.custom().loadTrustMaterial(null, acceptingTrustStrategy).build();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        }
+        SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
+        CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+        requestFactory.setHttpClient(httpClient);
+
+        return requestFactory;
+    }
+
+    private HttpComponentsClientHttpRequestFactory validateSSL(){
+        String location = "D:\\ssl_server.jks";
+        String pass = "greenlearner";
+        SSLContext sslContext = null;
+        try{
+            sslContext = SSLContextBuilder
+                    .create()
+//.loadKeyMaterial(...)// 加载客户端证书
+                    .loadTrustMaterial(ResourceUtils.getFile(location), pass.toCharArray())//加载信任证书库
+                    .build();
+        }catch (Exception e){
+
+        }
+        SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext,new LocalHostnameVerifier());
+        CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+
+        return requestFactory;
+    }
+
+    private class LocalHostnameVerifier implements HostnameVerifier {
+        @Override
+        public boolean verify(String s, SSLSession sslSession) {
+            return "localhost".equalsIgnoreCase(s) || "127.0.0.1".equals(s);
+        }
+    }
+
+}
